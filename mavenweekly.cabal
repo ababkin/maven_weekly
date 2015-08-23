@@ -1,4 +1,4 @@
-Name:                api
+Name:                mavenweekly
 Version:             0.1
 Synopsis:            Project Synopsis Here
 Description:         Project Description Here
@@ -14,7 +14,7 @@ Flag development
   Description: Whether to build the server in development (interpreted) mode
   Default: False
 
-Executable api
+Executable mavenweekly
   hs-source-dirs: src
   main-is: Main.hs
 
@@ -43,7 +43,8 @@ Executable api
     monadplus                 >= 1.4.2 && < 1.5.0,
     heist                     >= 0.14.1.1 && < 0.14.2,
     esqueleto                 >= 2.4.0 && < 3.0.0,
-    conduit                   >= 1.2.4 && < 2.0.0
+    conduit                   >= 1.2.4 && < 2.0.0,
+    sendgrid-haskell          >= 0.1.0 && < 2.0.0
 
   if flag(development)
     build-depends:
