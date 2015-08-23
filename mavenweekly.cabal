@@ -14,6 +14,24 @@ Flag development
   Description: Whether to build the server in development (interpreted) mode
   Default: False
 
+Executable send_email
+  hs-source-dirs: src/jobs, src
+  main-is: SendEmail.hs
+
+  Build-depends:
+    bytestring                >= 0.9.1   && < 0.11,
+    MonadCatchIO-transformers >= 0.2.1   && < 0.4,
+    mtl                       >= 2       && < 3,
+    text                      >= 0.11    && < 1.3,
+    time                      >= 1.1     && < 1.6,
+    base                      >= 4.4      && < 5,
+    persistent                >= 2.0    && < 2.2,
+    snaplet-persistent        >= 0.5    && < 0.6,
+    esqueleto                 >= 2.4.0 && < 3.0.0,
+    sendgrid-haskell          >= 0.1.0 && < 2.0.0
+
+  ghc-options: -threaded -Wall -fwarn-tabs -funbox-strict-fields -O2
+               -fno-warn-orphans -fno-warn-unused-do-bind
 Executable mavenweekly
   hs-source-dirs: src
   main-is: Main.hs
@@ -42,9 +60,7 @@ Executable mavenweekly
     web-routes                >= 0.27.9 && < 0.27.10,
     monadplus                 >= 1.4.2 && < 1.5.0,
     heist                     >= 0.14.1.1 && < 0.14.2,
-    esqueleto                 >= 2.4.0 && < 3.0.0,
-    conduit                   >= 1.2.4 && < 2.0.0,
-    sendgrid-haskell          >= 0.1.0 && < 2.0.0
+    esqueleto                 >= 2.4.0 && < 3.0.0
 
   if flag(development)
     build-depends:
