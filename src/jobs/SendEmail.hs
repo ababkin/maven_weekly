@@ -1,31 +1,25 @@
+{-# LANGUAGE OverloadedStrings #-}
 import Database.Persist(Entity(..))
+import Data.Text(Text)
 import SendGrid(SendGridEmail, sendEmail) 
+import Queries.Group(allLinksForGroups, usersForGroupId)
 import Schema
 
 import Snap.Snaplet.Auth(AuthUser)
 import Snap.Snaplet.Auth.Backends.Persistent(SnapAuthUser)
+import Snap.Snaplet.Persistent(runPersist)
+
+data NewsLetter = NewsLetter {
+  newsLetterRecipients :: [Entity SnapAuthUser]
+  , newsLetterContent :: [Text]
+}
 
 main :: IO ()
 main = do 
-  groups <- allGroups
-  mapM_ sendGroupEmail groups
+  links <- runPersist $ allLinksForGroups
+  usersByGroup <- mapM usersForGroupId links
+  let newsletters = zipWith NewsLetter usersByGroup links
+  mapM_ (sendEmail "123") . generateEmailFor newsletters
 
-allGroups :: IO [Entity Group]
-allGroups = undefined
-
-oneWeek = 7
-
-linksForGroup :: Int -> Entity Group -> IO [Entity Link]
-linksForGroup = undefined
-
-generateEmailFor :: [Entity Link] -> [Entity SnapAuthUser] -> SendGridEmail
+generateEmailFor :: NewsLetter -> SendGridEmail
 generateEmailFor = undefined
-
-usersForGroup :: Entity Group -> IO [Entity SnapAuthUser]
-usersForGroup = undefined
-
-sendGroupEmail :: Entity Group -> IO ()
-sendGroupEmail group = do 
-  recentlyAddedLinks <- linksForGroup oneWeek group 
-  usersInGroup <- usersForGroup group
-  sendEmail $ generateEmailFor recentlyAddedLinks usersInGroup 

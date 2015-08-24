@@ -10,7 +10,7 @@ module Handlers.Links(addLink, newLink) where
   import           Heist((##), Splices)
   import           Handlers.Filters(redirectIfNoUser, requireNoUser)
   import qualified Heist.Interpreted as I
-  import           PersistentHelpers(groupIdFromParam, groupsForUser, idFromGroupEntity)
+  import           Queries.Group(groupIdFromParam, groupsForUser, idFromGroupEntity)
   import           Schema
   import           Snap.Core(redirect, method, Method(..), getPostParam, modifyResponse, setResponseStatus)
   import           Snap.Snaplet(Handler)

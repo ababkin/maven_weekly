@@ -24,7 +24,7 @@ Library
   default-language:    Haskell2010
 
 Executable send_email
-  hs-source-dirs: src, src/jobs, src/lib
+  hs-source-dirs: src, src/jobs, src/lib, src/queries
   main-is: SendEmail.hs
 
   Build-depends:
@@ -44,7 +44,7 @@ Executable send_email
   ghc-options: -threaded -Wall -fwarn-tabs -funbox-strict-fields -O2
                -fno-warn-orphans -fno-warn-unused-do-bind
 Executable mavenweekly
-  hs-source-dirs: src
+  hs-source-dirs: src, src/queries
   main-is: Main.hs
 
   Build-depends:

@@ -1,21 +1,25 @@
 {-# LANGUAGE RankNTypes        #-}
-module PersistentHelpers(groupIdFromParam, idFromGroupEntity, groupsForUser) where
-import           Data.ByteString (ByteString)
-import           Database.Persist.Sql
-import           Data.Text(Text)
-import           Schema
-import           StringHelpers(byteStringToString)
-import qualified Database.Esqueleto      as E
-import           Snap.Snaplet.Auth(AuthUser)
-import           Snap.Snaplet.Auth.Backends.Persistent(userDBKey)
-import           Database.Esqueleto((^.))
+module Queries.Group(groupIdFromParam, idFromGroupEntity, groupsForUser, allLinksForGroups, usersForGroupId) where
 import           Control.Monad.Trans(MonadIO)
 import           Control.Monad.Reader(ReaderT)
+import           Data.ByteString (ByteString)
+import           Database.Persist.Sql
+import qualified Database.Esqueleto      as E
+import           Database.Esqueleto((^.))
 import           Data.Maybe(fromJust)
+import           Schema
+import           StringHelpers(byteStringToString)
+import           Snap.Snaplet.Auth(AuthUser)
+import           Snap.Snaplet.Auth.Backends.Persistent(userDBKey, SnapAuthUser)
 
-type PersistentBackend = MonadIO a => ReaderT SqlBackend a [Entity Group]
-allGroups :: PersistentBackend
-allGroups = undefined 
+type PersistentBackend = MonadIO a => ReaderT SqlBackend a [Entity Group] 
+
+allLinksForGroups :: MonadIO a => ReaderT SqlBackend a [Entity Link]
+allLinksForGroups = E.select $ E.from $ \link -> do 
+                      E.groupBy ( link ^. LinkGroupId )
+                      return link
+usersForGroupId :: MonadIO a => ReaderT SqlBackend a [Entity SnapAuthUser]
+usersForGroupId = undefined
 
 groupIdFromParam :: ByteString -> GroupId
 groupIdFromParam = GroupKey . SqlBackendKey . fromIntegral . read . byteStringToString
