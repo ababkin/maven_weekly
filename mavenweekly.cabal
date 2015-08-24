@@ -4,7 +4,7 @@ Synopsis:            Project Synopsis Here
 Description:         Project Description Here
 License:             AllRightsReserved
 Author:              Author
-Maintainer:          maintainer@example.com
+Maintainer:          jvannem@gmail.com
 Stability:           Experimental
 Category:            Web
 Build-type:          Simple
@@ -14,8 +14,17 @@ Flag development
   Description: Whether to build the server in development (interpreted) mode
   Default: False
 
+Library
+-- I'm not entirely sure why I have to do this
+-- But if i don't i get a bizarre error during the linking
+  exposed-modules: 
+    Schema
+  build-depends:       base >=4.7 && <4.8
+  hs-source-dirs: src
+  default-language:    Haskell2010
+
 Executable send_email
-  hs-source-dirs: src/jobs, src
+  hs-source-dirs: src, src/jobs, src/lib
   main-is: SendEmail.hs
 
   Build-depends:
@@ -28,7 +37,9 @@ Executable send_email
     persistent                >= 2.0    && < 2.2,
     snaplet-persistent        >= 0.5    && < 0.6,
     esqueleto                 >= 2.4.0 && < 3.0.0,
-    sendgrid-haskell          >= 0.1.0 && < 2.0.0
+    wreq                      >= 0.4.0 && < 1.0.0,
+    attoparsec                >= 0.11.1.0 && < 1.0.0,
+    aeson                     >= 0.7.0.1 && < 1.0
 
   ghc-options: -threaded -Wall -fwarn-tabs -funbox-strict-fields -O2
                -fno-warn-orphans -fno-warn-unused-do-bind

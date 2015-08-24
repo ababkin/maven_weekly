@@ -16,6 +16,6 @@ module Handlers.Filters(redirectIfNoUser, requireNoUser) where
     case retrievedUser of 
          Just user -> actionWithUser user
          Nothing   -> do 
-          modifyResponse $ setResponseStatus 422 ""
+          modifyResponse $ setResponseStatus 403 ""
           redirect "/login"
 
