@@ -1,7 +1,12 @@
 {-# LANGUAGE RankNTypes        #-}
-module Queries.Group(groupIdFromParam, idFromGroupEntity, groupsForUser, allLinksForGroups, usersForGroupId) where
+{-# LANGUAGE FlexibleContexts  #-}
+module Queries.Group(groupIdFromParam, idFromGroupEntity, groupsForUser, allGroups, usersForGroupId) where
+
 import           Control.Monad.Trans(MonadIO)
 import           Control.Monad.Reader(ReaderT)
+import           Control.Monad.Logger(MonadLogger)
+import           Control.Monad.Trans.Control(MonadBaseControl)
+import           Data.Text(Text)
 import           Data.ByteString (ByteString)
 import           Database.Persist.Sql
 import qualified Database.Esqueleto      as E
@@ -14,11 +19,15 @@ import           Snap.Snaplet.Auth.Backends.Persistent(userDBKey, SnapAuthUser)
 
 type PersistentBackend = MonadIO a => ReaderT SqlBackend a [Entity Group] 
 
-allLinksForGroups :: MonadIO a => ReaderT SqlBackend a [Entity Link]
-allLinksForGroups = E.select $ E.from $ \link -> do 
-                      E.groupBy ( link ^. LinkGroupId )
-                      return link
-usersForGroupId :: MonadIO a => ReaderT SqlBackend a [Entity SnapAuthUser]
+-- allLinksForGroups :: (MonadBaseControl IO a, MonadLogger a, MonadIO a) => ReaderT SqlBackend a [(E.Value (Key Group), E.Value Text)]
+-- allLinksForGroups = E.select $ E.from $ \link -> do 
+                      -- E.groupBy ( link ^. LinkGroupId )
+                      -- return (link ^. LinkGroupId, link ^. LinkUrl)
+
+allGroups :: (MonadBaseControl IO a, MonadLogger a, MonadIO a) => ReaderT SqlBackend a [Entity Group]
+allGroups = E.select $ E.from (\g -> return g)
+
+usersForGroupId :: MonadIO a => GroupId -> ReaderT SqlBackend a [Entity SnapAuthUser]
 usersForGroupId = undefined
 
 groupIdFromParam :: ByteString -> GroupId

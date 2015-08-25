@@ -18,7 +18,7 @@ module Handlers.Links(addLink, newLink) where
   import           Snap.Snaplet.Auth.Backends.Persistent(userDBKey)
   import           Snap.Snaplet.Heist(render, heistLocal, SnapletISplice)
   import           Snap.Snaplet.Persistent(runPersist)
-  import           StringHelpers( byteStringToText)
+  import           StringHelpers( byteStringToText )
 
   addLink :: AuthUser -> Handler App App ()
   addLink user = method POST $ do 
