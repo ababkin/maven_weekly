@@ -1,6 +1,6 @@
 {-# LANGUAGE RankNTypes        #-}
 {-# LANGUAGE FlexibleContexts  #-}
-module Queries.Group(groupsForUser, groupIdFromParam, idFromGroupEntity, linkUserGroup, usersInGroup, linksForGroup, allGroups) where
+module Queries.Group( groupsForUser, groupIdFromParam, idFromGroupEntity, linkUserGroup, usersInGroup, linksForGroup, allGroups) where
 
 import           Control.Applicative((<$>))
 import           Control.Monad.Trans(MonadIO)
@@ -44,11 +44,10 @@ usersInGroup  entityGroup = fmap (map db2au) $ do
 
 linkUserGroup :: (MonadBaseControl IO m, MonadLogger m, MonadIO m) =>  SqlPersistT m [( Entity Link, AuthUser ,Entity Group )]
 linkUserGroup = fmap (map (\(a, user, b) -> (a, db2au user, b) )) $ do
-  E.select $ E.from $ \(link `E.InnerJoin` user `E.InnerJoin` group) -> do
-              E.on $ link ^. LinkAddedByUserId E.==. user ^. SnapAuthUserId
+  E.select $ E.from $ \(user `E.InnerJoin` link `E.InnerJoin` group) -> do
               E.on $ link ^. LinkGroupId E.==. group ^. GroupId
+              E.on $ link ^. LinkAddedByUserId E.==. user ^. SnapAuthUserId
               return (link, user, group)
-
 
 
 linksForGroup :: (MonadBaseControl IO m, MonadLogger m, MonadIO m) =>  Entity Group -> SqlPersistT m [Entity Link]

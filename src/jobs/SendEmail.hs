@@ -15,7 +15,7 @@ import qualified Data.Traversable as T
 import Database.Persist(Entity(..), PersistEntity)
 import Database.Persist.Sql(SqlBackend)
 import Database.Persist.Postgresql(withPostgresqlConn, runSqlPersistM)
-import Data.Text(Text)
+import Data.Text(Text, append)
 import SendGrid(SendGridEmail(..), sendEmail) 
 import Queries.Group(allGroups, linkUserGroup)
 import Schema
@@ -24,7 +24,7 @@ import Snap.Snaplet(with)
 import Snap.Snaplet.Auth(AuthUser(..))
 import Snap.Snaplet.Auth.Backends.Persistent(SnapAuthUser)
 import StringHelpers(byteStringToString)
-import Data.HashMap(Map, insert, empty, insertWith, lookup)
+import Data.HashMap(Map, insert, empty, insertWith, lookup, mapWithKey)
 import Prelude hiding(lookup)
 import System.Environment(getEnv)
 
@@ -48,9 +48,13 @@ sortByGroup xs = foldr insertLinkUser empty xs
 emailsForGroup :: Map Text [(Link, AuthUser)] -> Map Text SendGridEmail
 emailsForGroup hash = mapWithKey generateEmail hash
   where
-    generateEmail key xs = SendGridEmail userEmails "info@domain.com" "Some Subject" links
+    generateEmail :: Text -> [(Link, AuthUser)] -> SendGridEmail
+    generateEmail key xs = SendGridEmail userEmails "info@domain.com" (key `append` " weekly newsletter") links
       where
-        userEmails = foldr userEmail
+        userEmails = catMaybes $ map (userEmail . snd) xs
+        links = foldr (\x acc -> (formatLink x) `append` acc ) "" xs
+          where
+            formatLink (link, user) = linkUrl link `append` " from " `append` (userLogin user)
 
 
 extractEntities :: (PersistEntity a, PersistEntity c) => [(Entity a, b, Entity c)] -> [(a, b, c)]

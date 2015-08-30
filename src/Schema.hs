@@ -11,10 +11,10 @@
 
 
 module Schema where
-import qualified Data.Text as T
 import qualified Database.Persist.TH  as DPTH
-import           Snap.Snaplet.Auth.Backends.Persistent(SnapAuthUserId)
+import qualified Data.Text as T
 import           Data.Time.Clock(UTCTime)
+import           Snap.Snaplet.Auth.Backends.Persistent(SnapAuthUserId)
 
 DPTH.share [DPTH.mkPersist DPTH.sqlSettings, DPTH.mkMigrate "migrateAll"] [DPTH.persistLowerCase|
   Group
@@ -25,7 +25,7 @@ DPTH.share [DPTH.mkPersist DPTH.sqlSettings, DPTH.mkMigrate "migrateAll"] [DPTH.
     group_id GroupId
     deriving Show
   Link
-    createdAt UTCTime default=CURRENT_TIME
+    createdAt UTCTime default=CURRENT_DATE
     groupId  GroupId
     addedByUserId SnapAuthUserId
     url T.Text
