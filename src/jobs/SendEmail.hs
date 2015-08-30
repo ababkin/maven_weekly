@@ -8,7 +8,6 @@ import Control.Monad.Logger(MonadLogger, runStderrLoggingT)
 import Control.Monad.Trans.Reader(runReaderT, ReaderT)
 import Control.Monad.Trans(liftIO)
 import qualified Data.ByteString.Char8 as BCH
-import Data.Hashable(Hashable(..))
 import Data.Monoid(mconcat)
 import Data.Maybe(catMaybes)
 import qualified Data.Traversable as T
@@ -28,14 +27,17 @@ import Data.HashMap(Map, insert, empty, insertWith, lookup, mapWithKey)
 import Prelude hiding(lookup)
 import System.Environment(getEnv)
 
-data NewsLetter = NewsLetter {
-    newsLetterContent :: [Text]
-  , newsLetterRecipients :: [Entity SnapAuthUser]
-}
-
-
 connStr = "host='localhost' dbname='snap-test' user='jamesvanneman' password=''"
 
+main :: IO ()
+main = do
+  runStderrLoggingT $ withPostgresqlConn connStr $ \conn -> do
+      liftIO $ flip runSqlPersistM conn $ do 
+        xs <- extractEntities `liftM` linkUserGroup
+        apiKey <- liftIO $ BCH.pack <$> getEnv "SENDGRID_API_KEY"
+        liftIO $ do 
+          T.mapM (sendEmail apiKey) $ emailsForGroup $ sortByGroup xs
+          return ()
 
 sortByGroup :: [(Link, AuthUser, Group)] -> Map Text [(Link, AuthUser)]
 sortByGroup xs = foldr insertLinkUser empty xs
@@ -54,18 +56,9 @@ emailsForGroup hash = mapWithKey generateEmail hash
         userEmails = catMaybes $ map (userEmail . snd) xs
         links = foldr (\x acc -> (formatLink x) `append` acc ) "" xs
           where
-            formatLink (link, user) = linkUrl link `append` " from " `append` (userLogin user)
+            formatLink (link, user) = linkUrl link `append` " from " `append` (userLogin user) `append` "\n"
 
 
 extractEntities :: (PersistEntity a, PersistEntity c) => [(Entity a, b, Entity c)] -> [(a, b, c)]
 extractEntities xs = flip map xs $ (\(x, y, z) -> (entityVal x, y, entityVal z) )
 
-main :: IO ()
-main = do
-  runStderrLoggingT $ withPostgresqlConn connStr $ \conn -> do
-      liftIO $ flip runSqlPersistM conn $ do 
-        xs <- extractEntities `liftM` linkUserGroup
-        apiKey <- liftIO $ BCH.pack <$> getEnv "SENDGRID_API_KEY"
-        liftIO $ do 
-          T.mapM (sendEmail apiKey) $ emailsForGroup $ sortByGroup xs
-          return ()

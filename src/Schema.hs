@@ -30,6 +30,5 @@ DPTH.share [DPTH.mkPersist DPTH.sqlSettings, DPTH.mkMigrate "migrateAll"] [DPTH.
     addedByUserId SnapAuthUserId
     url T.Text
     sent Bool default=False
-    UniqueGroupUserId groupId addedByUserId
     deriving Show
 |]
