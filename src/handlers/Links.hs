@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Handlers.Links(addLink, newLink) where
-  import           Application(AppUrl(..), App)
+  import           Application(App)
   import           Control.Applicative((<*>), (<$>), liftA)
   import           Control.Monad.Trans(liftIO)
   import           Database.Persist(insert, Entity(..))
