@@ -14,19 +14,22 @@ module Schema where
 import qualified Data.Text as T
 import qualified Database.Persist.TH  as DPTH
 import           Snap.Snaplet.Auth.Backends.Persistent(SnapAuthUserId)
-import           Data.Time.Clock(UTCTime, getCurrentTime)
+import           Data.Time.Clock(UTCTime)
 
 DPTH.share [DPTH.mkPersist DPTH.sqlSettings, DPTH.mkMigrate "migrateAll"] [DPTH.persistLowerCase|
   Group
     name T.Text
-    deriving Show
+    deriving Show Eq Ord
   UserGroup
     user_id SnapAuthUserId
     group_id GroupId
     deriving Show
   Link
-    createdAt UTCTime
+    createdAt UTCTime default=CURRENT_TIME
     groupId  GroupId
+    addedByUserId SnapAuthUserId
     url T.Text
+    sent Bool default=False
+    UniqueGroupUserId groupId addedByUserId
     deriving Show
 |]

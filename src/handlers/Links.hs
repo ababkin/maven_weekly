@@ -24,10 +24,11 @@ module Handlers.Links(addLink, newLink) where
   addLink user = method POST $ do 
                           link <- getPostParam "link"
                           groupId <- (\x -> groupIdFromParam <$> x ) `liftA` getPostParam "group_id"
-                          require2Params link groupId $ \link gid -> do
+                          let currentUserId = userDBKey user
+                          require3Params link groupId currentUserId $ \link gid userId -> do
                             currentTime <- liftIO getCurrentTime
                             -- TODO: Make sure the user is actually a part of this group
-                            runPersist . insert $ Link currentTime gid (byteStringToText link)
+                            runPersist . insert $ Link currentTime gid userId (byteStringToText link) False
                             modifyResponse $ setResponseStatus 201 ""
                             render "add_link_success"
                             return ()
@@ -55,8 +56,8 @@ module Handlers.Links(addLink, newLink) where
     "groupId"  ## I.textSplice . pack . show  $ idFromGroupEntity group
     "groupName"  ## I.textSplice  . groupName $ entityVal group
 
-  require2Params :: (Show b, Show c) => Maybe b -> Maybe c -> (b -> c -> Handler App App ()) -> Handler App App ()
-  require2Params b c fn = case fn <$> b <*> c of 
+  require3Params :: (Show a, Show b, Show c) => Maybe a -> Maybe b -> Maybe c -> (a -> b -> c -> Handler App App ()) -> Handler App App ()
+  require3Params a b c fn = case fn <$> a <*> b <*> c of 
                                Just a -> a >> return ()
                                Nothing -> do 
                                  render "missing_params"

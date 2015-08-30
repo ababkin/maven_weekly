@@ -1,7 +1,8 @@
 {-# LANGUAGE RankNTypes        #-}
 {-# LANGUAGE FlexibleContexts  #-}
-module Queries.Group(groupIdFromParam, idFromGroupEntity, groupsForUser, allGroups, usersForGroupId) where
+module Queries.Group(groupsForUser, groupIdFromParam, idFromGroupEntity, linkUserGroup, usersInGroup, linksForGroup, allGroups) where
 
+import           Control.Applicative((<$>))
 import           Control.Monad.Trans(MonadIO)
 import           Control.Monad.Reader(ReaderT)
 import           Control.Monad.Logger(MonadLogger)
@@ -14,8 +15,8 @@ import           Database.Esqueleto((^.))
 import           Data.Maybe(fromJust)
 import           Schema
 import           StringHelpers(byteStringToString)
-import           Snap.Snaplet.Auth(AuthUser)
-import           Snap.Snaplet.Auth.Backends.Persistent(userDBKey, SnapAuthUser)
+import           Snap.Snaplet.Auth(AuthUser(..))
+import           Snap.Snaplet.Auth.Backends.Persistent
 
 type PersistentBackend = MonadIO a => ReaderT SqlBackend a [Entity Group] 
 
@@ -27,14 +28,35 @@ type PersistentBackend = MonadIO a => ReaderT SqlBackend a [Entity Group]
 allGroups :: (MonadBaseControl IO a, MonadLogger a, MonadIO a) => ReaderT SqlBackend a [Entity Group]
 allGroups = E.select $ E.from (\g -> return g)
 
-usersForGroupId :: MonadIO a => GroupId -> ReaderT SqlBackend a [Entity SnapAuthUser]
-usersForGroupId = undefined
-
 groupIdFromParam :: ByteString -> GroupId
 groupIdFromParam = GroupKey . SqlBackendKey . fromIntegral . read . byteStringToString
 
 idFromGroupEntity :: Entity Group -> Int
 idFromGroupEntity = fromIntegral . unSqlBackendKey . unGroupKey . entityKey
+
+usersInGroup :: (MonadBaseControl IO m, MonadLogger m, MonadIO m) => Entity Group ->  SqlPersistT m [AuthUser]
+usersInGroup  entityGroup = fmap (map db2au) $ do 
+                              E.select $ E.from $ \(user `E.InnerJoin` userGroup `E.InnerJoin` group) -> do
+                                  E.on $ group ^. GroupId E.==. userGroup ^. UserGroupGroup_id
+                                  E.on $ userGroup ^. UserGroupUser_id E.==. user ^. SnapAuthUserId
+                                  E.where_ ( group ^. GroupId E.==. (E.val $ entityKey entityGroup) )
+                                  return user
+
+linkUserGroup :: (MonadBaseControl IO m, MonadLogger m, MonadIO m) =>  SqlPersistT m [( Entity Link, AuthUser ,Entity Group )]
+linkUserGroup = fmap (map (\(a, user, b) -> (a, db2au user, b) )) $ do
+  E.select $ E.from $ \(link `E.InnerJoin` user `E.InnerJoin` group) -> do
+              E.on $ link ^. LinkAddedByUserId E.==. user ^. SnapAuthUserId
+              E.on $ link ^. LinkGroupId E.==. group ^. GroupId
+              return (link, user, group)
+
+
+
+linksForGroup :: (MonadBaseControl IO m, MonadLogger m, MonadIO m) =>  Entity Group -> SqlPersistT m [Entity Link]
+linksForGroup group = do
+  E.select $ E.from $ \(link) -> do
+              E.where_ ( link ^. LinkGroupId E.==. E.val (entityKey group) )
+              return link
+
 
 groupsForUser :: AuthUser -> PersistentBackend
 groupsForUser user = do 

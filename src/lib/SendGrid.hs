@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module SendGrid(SendGridEmail, SendGridApiKey, sendEmail) where
+module SendGrid(SendGridEmail(..), SendGridApiKey, sendEmail) where
   import Data.ByteString(ByteString, append)
   import Data.Text(Text)
   import Control.Lens(view, (&), (.~))
