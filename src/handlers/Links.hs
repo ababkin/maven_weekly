@@ -8,7 +8,7 @@ module Handlers.Links(addLink, newLink) where
   import           Data.Time.Clock(getCurrentTime)
   import           Data.Monoid(mempty)
   import           Heist((##), Splices)
-  import           Handlers.Filters(redirectIfNoUser, requireNoUser)
+  import           Handlers.Filters(requireUser, requireNoUser)
   import qualified Heist.Interpreted as I
   import           Queries.Group(groupIdFromParam, groupsForUser, idFromGroupEntity)
   import           Schema

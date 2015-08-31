@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Handlers.Filters(redirectIfNoUser, requireNoUser) where
+module Handlers.Filters(requireUser, requireNoUser) where
   import           Application(auth)
   import           Snap.Snaplet(with)
   import           Snap.Core(redirect, modifyResponse, setResponseStatus)
@@ -11,7 +11,7 @@ module Handlers.Filters(redirectIfNoUser, requireNoUser) where
          Just user -> redirect redirectPath
          Nothing   -> handler
 
-  redirectIfNoUser actionWithUser =  do 
+  requireUser actionWithUser =  do 
     retrievedUser <- with auth currentUser
     case retrievedUser of 
          Just user -> actionWithUser user

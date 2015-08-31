@@ -17,23 +17,24 @@ import           Heist
 import           Schema(migrateAll)
 import           Snap.Core
 import           Snap.Snaplet
-import           Snap.Snaplet.Auth
+import           Snap.Snaplet.Auth hiding (requireUser)
 import           Snap.Snaplet.Auth.Backends.Persistent(initPersistAuthManager, migrateAuth)
 import           Snap.Snaplet.Heist(heistInit)
 import           Snap.Snaplet.Session.Backends.CookieSession(initCookieSessionManager)
 import           Snap.Snaplet.Persistent(initPersist, persistPool)
 import           Snap.Util.FileServe(serveDirectory)
 import           Handlers.Authentication(handleLoginSubmit, handleLogin, handleLogout)
-import           Handlers.Filters(redirectIfNoUser, requireNoUser)
+import           Handlers.Filters(requireUser, requireNoUser)
 import           Handlers.Links(addLink, newLink)
 import           Handlers.Users(handleNewUser)
 
 routes :: [(ByteString, Handler App App ())]
 routes = [
-            ("/login",  requireNoUser "/new-link" $ with auth handleLoginSubmit)
+            ("/", method GET $ redirect "/login" )
+          , ("/login",  requireNoUser "/new-link" $ with auth handleLoginSubmit)
           , ("/logout", with auth handleLogout)
-          , ("/add-link", redirectIfNoUser addLink)
-          , ("/new-link", redirectIfNoUser newLink)
+          , ("/add-link", requireUser addLink)
+          , ("/new-link", requireUser newLink)
           , ("/new_user", requireNoUser "/new-link" $ with auth handleNewUser)
           , ("",          serveDirectory "static")
          ]
