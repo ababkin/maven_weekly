@@ -6,7 +6,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script>
       $(document).ready(function(){
-        var port = chrome.runtime.connect("oakegmlednpcfcjchpbgbimhgknflehc");
+        var port = chrome.runtime.connect("hpbhndbliffegdpjbofpaongkchpfcbi");
         var currentUrl;
         port.onMessage.addListener(function(formValues){
           $.post("http://localhost:8000/add-link", formValues, function(responseBody){
