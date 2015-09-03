@@ -39,18 +39,19 @@ main = do
           T.mapM (sendEmail apiKey) $ emailsForGroup $ sortByGroup xs
           return ()
 
-sortByGroup :: [(Link, AuthUser, Group)] -> Map Text [(Link, AuthUser)]
+type GroupName = Text
+sortByGroup :: [(Link, AuthUser, Group)] -> Map GroupName [(Link, AuthUser)]
 sortByGroup xs = foldr insertLinkUser empty xs
   where 
-    insertLinkUser :: (Link, AuthUser, Group) -> Map Text [(Link, AuthUser)] -> Map Text [(Link, AuthUser)] 
+    insertLinkUser :: (Link, AuthUser, Group) -> Map GroupName [(Link, AuthUser)] -> Map GroupName [(Link, AuthUser)] 
     insertLinkUser (link, user, group) hash = case lookup (groupName group) hash of 
                                                   Just a -> insert (groupName group) ((link, user) : a) hash
                                                   Nothing -> insert (groupName group) [(link, user)] hash
 
-emailsForGroup :: Map Text [(Link, AuthUser)] -> Map Text SendGridEmail
+emailsForGroup :: Map GroupName [(Link, AuthUser)] -> Map GroupName SendGridEmail
 emailsForGroup hash = mapWithKey generateEmail hash
   where
-    generateEmail :: Text -> [(Link, AuthUser)] -> SendGridEmail
+    generateEmail :: GroupName -> [(Link, AuthUser)] -> SendGridEmail
     generateEmail key xs = SendGridEmail userEmails "info@domain.com" (key `append` " weekly newsletter") links
       where
         userEmails = catMaybes $ map (userEmail . snd) xs
@@ -61,4 +62,3 @@ emailsForGroup hash = mapWithKey generateEmail hash
 
 extractEntities :: (PersistEntity a, PersistEntity c) => [(Entity a, b, Entity c)] -> [(a, b, c)]
 extractEntities xs = flip map xs $ (\(x, y, z) -> (entityVal x, y, entityVal z) )
-
