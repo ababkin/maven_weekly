@@ -40,6 +40,7 @@ main = do
           return ()
 
 type GroupName = Text
+
 sortByGroup :: [(Link, AuthUser, Group)] -> Map GroupName [(Link, AuthUser)]
 sortByGroup xs = foldr insertLinkUser empty xs
   where 

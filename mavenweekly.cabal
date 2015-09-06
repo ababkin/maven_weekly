@@ -8,7 +8,7 @@ Maintainer:          jvannem@gmail.com
 Stability:           Experimental
 Category:            Web
 Build-type:          Simple
-Cabal-version:       >=1.2
+Cabal-version:       >=1.10
 
 Flag development
   Description: Whether to build the server in development (interpreted) mode
@@ -19,23 +19,34 @@ Library
 -- But if i don't i get a bizarre error during the linking
   exposed-modules: 
     Schema
-  build-depends:       base >=4.7 && <4.8
+  build-depends:       base >=4.7 && <4.8,
+    text                      >= 0.11    && < 1.3,
+    persistent-template   >= 2.1.3.4 && < 2.1.3.5, 
+    time >= 1.4.2 && < 1.4.3,
+    snaplet-persistent        >= 0.5    && < 0.6
+
   hs-source-dirs: src
   default-language:    Haskell2010
 
 Executable send_email
   hs-source-dirs: src, src/jobs, src/lib, src/queries
   main-is: SendEmail.hs
+  default-language:    Haskell2010
 
   Build-depends:
     bytestring                >= 0.9.1   && < 0.11,
     MonadCatchIO-transformers >= 0.2.1   && < 0.4,
     mtl                       >= 2       && < 3,
+    lens                      >= 3.7.6   && < 4.12, 
     text                      >= 0.11    && < 1.3,
     time                      >= 1.1     && < 1.6,
     base                      >= 4.4      && < 5,
     persistent                >= 2.0    && < 2.2,
     snaplet-persistent        >= 0.5    && < 0.6,
+    persistent-template   >= 2.1.3.4 && < 2.1.3.5, 
+    transformers              >= 0.3.0.0 && < 0.4.0.0,
+    snap                      >= 0.13    && < 0.15,
+    hashmap                   >= 1.3.0   && < 1.4.0,
     esqueleto                 >= 2.4.0 && < 3.0.0,
     wreq                      >= 0.4.0 && < 1.0.0,
     attoparsec                >= 0.11.1.0 && < 1.0.0,
@@ -49,6 +60,7 @@ Executable send_email
 Executable mavenweekly
   hs-source-dirs: src, src/queries
   main-is: Main.hs
+  default-language:    Haskell2010
 
   Build-depends:
     bytestring                >= 0.9.1   && < 0.11,
@@ -74,7 +86,9 @@ Executable mavenweekly
     web-routes                >= 0.27.9 && < 0.27.10,
     monadplus                 >= 1.4.2 && < 1.5.0,
     heist                     >= 0.14.1.1 && < 0.14.2,
-    esqueleto                 >= 2.4.0 && < 3.0.0
+    esqueleto                 >= 2.4.0 && < 3.0.0,
+    monad-logger              >= 0.3.13.2 && < 0.4.0,
+    monad-control             >= 1.0.0 && < 1.2.0 
 
   if flag(development)
     build-depends:
