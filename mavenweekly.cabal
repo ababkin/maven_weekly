@@ -19,7 +19,8 @@ Library
 -- But if i don't i get a bizarre error during the linking
   exposed-modules: 
     Schema
-  build-depends:       base >=4.7 && <4.8,
+    Queries.Group
+  build-depends:       base >=4.7 && <5.0,
     text                      >= 0.11    && < 1.3,
     persistent-template   >= 2.1.3.4 && < 2.1.3.5, 
     time >= 1.4.2 && < 1.4.3,
@@ -35,6 +36,7 @@ Executable send_email
 
   Build-depends:
     bytestring                >= 0.9.1   && < 0.11,
+    mavenweekly               ,
     MonadCatchIO-transformers >= 0.2.1   && < 0.4,
     mtl                       >= 2       && < 3,
     lens                      >= 3.7.6   && < 4.12, 
