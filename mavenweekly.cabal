@@ -20,11 +20,18 @@ Library
   exposed-modules: 
     Schema
     Queries.Group
-  build-depends:       base >=4.7 && <5.0,
+  build-depends:       base >=4.7 && <4.9,
     text                      >= 0.11    && < 1.3,
     persistent-template   >= 2.1.3.4 && < 2.1.3.5, 
-    time >= 1.4.2 && < 1.4.3,
-    snaplet-persistent        >= 0.5    && < 0.6
+    time                      >= 1.1     && < 1.6,
+    snaplet-persistent        >= 0.5    && < 0.6, 
+    mtl                       >= 2       && < 3,
+    monad-logger              >= 0.3.13.2 && < 0.4.0,
+    persistent                >= 2.0    && < 3.0,
+    esqueleto                 >= 2.4.0 && < 3.0.0,
+    snap                      >= 0.13    && < 0.15,
+    bytestring                >= 0.9.1   && < 0.11,
+    monad-control             >= 1.0.0 && < 1.2.0
 
   hs-source-dirs: src
   default-language:    Haskell2010
@@ -39,14 +46,14 @@ Executable send_email
     mavenweekly               ,
     MonadCatchIO-transformers >= 0.2.1   && < 0.4,
     mtl                       >= 2       && < 3,
-    lens                      >= 3.7.6   && < 4.12, 
+    lens                      >= 3.7.6   && < 4.7, 
     text                      >= 0.11    && < 1.3,
     time                      >= 1.1     && < 1.6,
-    base                      >= 4.4      && < 5,
-    persistent                >= 2.0    && < 2.2,
+    base                      >= 4.7     && < 4.9,
+    persistent                >= 2.0    && < 3.0,
     snaplet-persistent        >= 0.5    && < 0.6,
     persistent-template   >= 2.1.3.4 && < 2.1.3.5, 
-    transformers              >= 0.3.0.0 && < 0.4.0.0,
+    transformers              >= 0.4.0.0 && < 0.6.0.0,
     snap                      >= 0.13    && < 0.15,
     hashmap                   >= 1.3.0   && < 1.4.0,
     esqueleto                 >= 2.4.0 && < 3.0.0,
@@ -60,29 +67,29 @@ Executable send_email
   ghc-options: -threaded -Wall -fwarn-tabs -funbox-strict-fields -O2
                -fno-warn-orphans -fno-warn-unused-do-bind
 Executable mavenweekly
-  hs-source-dirs: src, src/Queries
+  hs-source-dirs: src
   main-is: Main.hs
   default-language:    Haskell2010
 
   Build-depends:
     bytestring                >= 0.9.1   && < 0.11,
     MonadCatchIO-transformers >= 0.2.1   && < 0.4,
+    mavenweekly               ,
     mtl                       >= 2       && < 3,
     snap                      >= 0.13    && < 0.15,
-    transformers              >= 0.3.0.0 && < 0.4.0.0,
+    transformers              >= 0.4.0.0 && < 0.6.0.0,
     snap-core                 >= 0.9     && < 0.10,
     snap-server               >= 0.9     && < 0.10,
     snap-loader-static        >= 0.9     && < 0.10,
     text                      >= 0.11    && < 1.3,
     time                      >= 1.1     && < 1.6,
     xmlhtml                   >= 0.1     && < 0.3,
-    base                      >= 4.4     && < 5,
+    base                      >= 4.7     && < 4.9,
     hashmap                   >= 1.3.0   && < 1.4.0,
-    lens                      >= 3.7.6   && < 4.12, 
+    lens                      >= 3.7.6   && < 4.7, 
     snaplet-persistent        >= 0.5     && < 0.6,
-    persistent                >= 2.0     && < 2.2,
+    persistent                >= 2.0    && < 3.0,
     persistent-template,
-    time,
     web-routes-th,
     path-pieces,
     web-routes                >= 0.27.9 && < 0.27.10,
