@@ -10,3 +10,8 @@ log
 .cabal-sandbox
 cabal.sandbox.config
 mavenweekly
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
