@@ -30,9 +30,8 @@ import           Handlers.Users(handleNewUser)
 
 routes :: [(ByteString, Handler App App ())]
 routes = [
-            ("/", method GET $ redirect "/login" )
+            ("/", method GET $ redirect "/new-link" )
           , ("/login",  requireNoUser "/new-link" $ with auth handleLoginSubmit)
-          , ("/logout", with auth handleLogout)
           , ("/add-link", requireUser addLink)
           , ("/new-link", requireUser newLink)
           , ("/new_user", requireNoUser "/new-link" $ with auth handleNewUser)

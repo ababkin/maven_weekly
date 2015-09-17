@@ -19,10 +19,12 @@ import           Snap.Snaplet.Auth.Backends.Persistent(SnapAuthUserId)
 DPTH.share [DPTH.mkPersist DPTH.sqlSettings, DPTH.mkMigrate "migrateAll"] [DPTH.persistLowerCase|
   Group
     name T.Text
+    UniqueGroupName name
     deriving Show Eq Ord
   UserGroup
     user_id SnapAuthUserId
     group_id GroupId
+    UniqueUserGroup user_id group_id
     deriving Show
   Link
     createdAt UTCTime default=CURRENT_DATE
