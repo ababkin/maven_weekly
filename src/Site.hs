@@ -11,7 +11,9 @@ module Site (app) where
 import           Application
 import qualified Database.Persist.Sql as DPSQL
 import           Control.Lens(view)
+import           Control.Monad.Trans(liftIO)
 import           Data.ByteString (ByteString)
+import           Data.Monoid(mconcat)
 import           Database.Persist
 import           Heist
 import           Schema(migrateAll)
@@ -23,6 +25,8 @@ import           Snap.Snaplet.Heist(heistInit)
 import           Snap.Snaplet.Session.Backends.CookieSession(initCookieSessionManager)
 import           Snap.Snaplet.Persistent(initPersist, persistPool)
 import           Snap.Util.FileServe(serveDirectory)
+import           System.Directory(getCurrentDirectory)
+import           System.Environment(getEnv)
 import           Handlers.Authentication(handleLoginSubmit, handleLogin, handleLogout)
 import           Handlers.Filters(requireUser, requireNoUser)
 import           Handlers.Links(addLink, newLink)
@@ -38,8 +42,21 @@ routes = [
           , ("",          serveDirectory "static")
          ]
 
+writePostgresConnectionVariables :: IO ()
+writePostgresConnectionVariables = do 
+  host <- getEnv "DATABASE_HOST"
+  port <- getEnv "DATABASE_PORT"
+  user <- getEnv "DATABASE_USER"
+  password <- getEnv "DATABASE_PASSWORD"
+  name <- getEnv "DATABASE_NAME"
+  currentDir <- getCurrentDirectory
+  let connectionString = mconcat ["\"", "host='", host, "' port='", port, "' user='", user, "' password='", password, "' dbname='", name, "'\"", "\n", "postgre-pool-size=3"]
+  let filePath = currentDir ++ "/snaplets/persist/devel.cfg"
+  writeFile filePath ("postgre-con-str=" ++ connectionString)
+
 app :: SnapletInit App App
 app = makeSnaplet "app" "An snaplet example application." Nothing $ do
+    liftIO writePostgresConnectionVariables
     d <- nestSnaplet "db" db $ initPersist (DPSQL.runMigrationUnsafe migrateAll) 
     -- Yea yea ok this is dumb. Show me how to really do it right.
     _ <- nestSnaplet "db" db $ initPersist (DPSQL.runMigrationUnsafe migrateAuth)
