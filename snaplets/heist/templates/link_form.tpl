@@ -17,7 +17,7 @@
     var port = chrome.runtime.connect("kbmblakkhpncjjnkijfgmcagmogpncif");
     var currentUrl;
     port.onMessage.addListener(function(formValues){
-      $.post("http://localhost:8000/add-link", formValues, function(responseBody){
+      $.post("http://mavenweekly.com/add-link", formValues, function(responseBody){
         $("#content").replaceWith(responseBody);
       }, "html");
     });
