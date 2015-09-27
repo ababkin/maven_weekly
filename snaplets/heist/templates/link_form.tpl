@@ -14,7 +14,7 @@
 
 <script>
   $(document).ready(function(){
-    var port = chrome.runtime.connect("kbmblakkhpncjjnkijfgmcagmogpncif");
+    var port = chrome.runtime.connect("ajhjpiboagkhffibgcipdcjfglnfieap");
     var currentUrl;
     port.onMessage.addListener(function(formValues){
       $.post("http://mavenweekly.com/add-link", formValues, function(responseBody){
