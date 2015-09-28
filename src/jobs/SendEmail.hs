@@ -26,12 +26,18 @@ import StringHelpers(byteStringToString)
 import Data.HashMap(Map, insert, empty, insertWith, lookup, mapWithKey)
 import Prelude hiding(lookup)
 import System.Environment(getEnv)
-
-connStr = "host='localhost' dbname='snap-test' user='jamesvanneman' password=''"
+import System.Directory(getCurrentDirectory)
 
 main :: IO ()
 main = do
-  runStderrLoggingT $ withPostgresqlConn connStr $ \conn -> do
+  host <- getEnv "DATABASE_HOST"
+  port <- getEnv "DATABASE_PORT"
+  user <- getEnv "DATABASE_USER"
+  password <- getEnv "DATABASE_PASSWORD"
+  name <- getEnv "DATABASE_NAME"
+  currentDir <- getCurrentDirectory
+  let connectionString = BCH.pack $ mconcat ["\"", "host='", host, "' port='", port, "' user='", user, "' password='", password, "' dbname='", name, "'\"", "\n", "postgre-pool-size=3"]
+  runStderrLoggingT $ withPostgresqlConn connectionString $ \conn -> do
       liftIO $ flip runSqlPersistM conn $ do 
         xs <- extractEntities `liftM` linkUserGroup
         apiKey <- liftIO $ BCH.pack <$> getEnv "SENDGRID_API_KEY"

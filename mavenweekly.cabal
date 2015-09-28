@@ -43,6 +43,7 @@ Executable send_email
 
   Build-depends:
     bytestring                >= 0.9.1   && < 0.11,
+    directory                 >= 1.2.0.0 && < 1.3.0,
     mavenweekly               ,
     MonadCatchIO-transformers >= 0.2.1   && < 0.4,
     mtl                       >= 2       && < 3,
