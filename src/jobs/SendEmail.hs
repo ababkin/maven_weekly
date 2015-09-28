@@ -26,18 +26,12 @@ import StringHelpers(byteStringToString)
 import Data.HashMap(Map, insert, empty, insertWith, lookup, mapWithKey)
 import Prelude hiding(lookup)
 import System.Environment(getEnv)
-import System.Directory(getCurrentDirectory)
+
+connStr = "host='localhost' dbname='snap-test' user='jamesvanneman' password=''"
 
 main :: IO ()
 main = do
-  host <- getEnv "DATABASE_HOST"
-  port <- getEnv "DATABASE_PORT"
-  user <- getEnv "DATABASE_USER"
-  password <- getEnv "DATABASE_PASSWORD"
-  name <- getEnv "DATABASE_NAME"
-  currentDir <- getCurrentDirectory
-  let connectionString = BCH.pack $ mconcat ["\"", "host='", host, "' port='", port, "' user='", user, "' password='", password, "' dbname='", name, "'\"", "\n", "postgre-pool-size=3"]
-  runStderrLoggingT $ withPostgresqlConn connectionString $ \conn -> do
+  runStderrLoggingT $ withPostgresqlConn connStr $ \conn -> do
       liftIO $ flip runSqlPersistM conn $ do 
         xs <- extractEntities `liftM` linkUserGroup
         apiKey <- liftIO $ BCH.pack <$> getEnv "SENDGRID_API_KEY"
@@ -59,12 +53,12 @@ emailsForGroup :: Map GroupName [(Link, AuthUser)] -> Map GroupName SendGridEmai
 emailsForGroup hash = mapWithKey generateEmail hash
   where
     generateEmail :: GroupName -> [(Link, AuthUser)] -> SendGridEmail
-    generateEmail key xs = SendGridEmail userEmails "info@domain.com" (key `append` " weekly newsletter") links
+    generateEmail key xs = SendGridEmail userEmails "no-reply@mavenweekly.com" (key `append` " weekly newsletter") links
       where
         userEmails = catMaybes $ map (userEmail . snd) xs
         links = foldr (\x acc -> (formatLink x) `append` acc ) "" xs
           where
-            formatLink (link, user) = linkUrl link `append` " from " `append` (userLogin user) `append` "\n"
+            formatLink (link, user) = linkUrl link `append` " from " `append` (userLogin user) `append` "\\n"
 
 
 extractEntities :: (PersistEntity a, PersistEntity c) => [(Entity a, b, Entity c)] -> [(a, b, c)]
