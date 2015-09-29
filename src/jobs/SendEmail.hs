@@ -15,6 +15,7 @@ import Database.Persist(Entity(..), PersistEntity)
 import Database.Persist.Sql(SqlBackend)
 import Database.Persist.Postgresql(withPostgresqlConn, runSqlPersistM)
 import Data.Text(Text, append)
+import DB.Settings(postgresConnString)
 import SendGrid(SendGridEmail(..), sendEmail) 
 import Queries.Group(allGroups, linkUserGroup)
 import Schema
@@ -27,10 +28,9 @@ import Data.HashMap(Map, insert, empty, insertWith, lookup, mapWithKey)
 import Prelude hiding(lookup)
 import System.Environment(getEnv)
 
-connStr = "host='localhost' dbname='snap-test' user='jamesvanneman' password=''"
-
 main :: IO ()
 main = do
+  connStr <- BCH.pack <$> postgresConnString
   runStderrLoggingT $ withPostgresqlConn connStr $ \conn -> do
       liftIO $ flip runSqlPersistM conn $ do 
         xs <- extractEntities `liftM` linkUserGroup
@@ -53,12 +53,12 @@ emailsForGroup :: Map GroupName [(Link, AuthUser)] -> Map GroupName SendGridEmai
 emailsForGroup hash = mapWithKey generateEmail hash
   where
     generateEmail :: GroupName -> [(Link, AuthUser)] -> SendGridEmail
-    generateEmail key xs = SendGridEmail userEmails "no-reply@mavenweekly.com" (key `append` " weekly newsletter") links
+    generateEmail key xs = SendGridEmail userEmails "no-reply@mavenweekly.com" ("Maven Weekly: " `append` key) links
       where
         userEmails = catMaybes $ map (userEmail . snd) xs
         links = foldr (\x acc -> (formatLink x) `append` acc ) "" xs
           where
-            formatLink (link, user) = linkUrl link `append` " from " `append` (userLogin user) `append` "\\n"
+            formatLink (link, user) = linkUrl link `append` " from " `append` (userLogin user) `append` " \n\n\n"
 
 
 extractEntities :: (PersistEntity a, PersistEntity c) => [(Entity a, b, Entity c)] -> [(a, b, c)]
