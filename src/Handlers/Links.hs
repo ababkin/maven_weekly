@@ -23,7 +23,7 @@ module Handlers.Links(addLink, newLink) where
   addLink :: AuthUser -> Handler App App ()
   addLink user = method POST $ do 
                           link <- getPostParam "link"
-                          groupId <- fmap groupIdFromParam `liftA` getPostParam "group_id"
+                          groupId <- fmap groupIdFromParam <$> getPostParam "group_id"
                           let currentUserId = userDBKey user
                           require3Params link groupId currentUserId $ \link gid userId -> do
                             currentTime <- liftIO getCurrentTime
