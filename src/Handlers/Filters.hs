@@ -5,17 +5,9 @@ module Handlers.Filters(requireUser, requireNoUser) where
   import           Snap.Core(redirect, modifyResponse, setResponseStatus)
   import           Snap.Snaplet.Auth(currentUser)
 
-  requireNoUser redirectPath handler = do 
-    retrievedUser <- with auth currentUser
-    case retrievedUser of
-         Just user -> redirect redirectPath
-         Nothing   -> handler
+  requireNoUser redirectPath handler =
+    maybe handler (const $ redirect redirectPath) =<< with auth currentUser
 
-  requireUser actionWithUser =  do 
-    retrievedUser <- with auth currentUser
-    case retrievedUser of 
-         Just user -> actionWithUser user
-         Nothing   -> do 
-          modifyResponse $ setResponseStatus 403 ""
-          redirect "/login"
+  requireUser actionWithUser =
+    maybe (modifyResponse (setResponseStatus 403 "") >> redirect "/login") actionWithUser =<< with auth currentUser
 
