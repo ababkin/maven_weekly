@@ -48,6 +48,6 @@ emailsForGroup = map generateEmail
       where
         groupTitle = "Maven Weekly: " `append` groupName (entityVal group)
         userEmails = mapMaybe userEmail users
-        formattedLinks = foldr (\x acc -> (formatLink x) `append` acc ) "" links
+        formattedLinks = foldr (append . formatLink) "" links
           where
             formatLink link  = linkUrl (entityVal link) `append` "\n\n\n"
