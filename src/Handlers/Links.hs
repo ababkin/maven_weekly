@@ -56,7 +56,13 @@ module Handlers.Links(addLink, newLink) where
     "groupId"  ## I.textSplice . pack . show  $ idFromGroupEntity group
     "groupName"  ## I.textSplice  . groupName $ entityVal group
 
-  require3Params :: (Show a, Show b, Show c) => Maybe a -> Maybe b -> Maybe c -> (a -> b -> c -> Handler App App ()) -> Handler App App ()
+  require3Params 
+    :: (Show a, Show b, Show c) 
+    => Maybe a 
+    -> Maybe b 
+    -> Maybe c 
+    -> (a -> b -> c -> Handler App App ()) 
+    -> Handler App App ()
   require3Params a b c fn = case fn <$> a <*> b <*> c of 
                                Just a -> a >> return ()
                                Nothing -> do 
