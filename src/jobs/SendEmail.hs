@@ -49,4 +49,4 @@ emailsForGroup = map generateEmail
         userEmails = mapMaybe userEmail users
         formattedLinks = foldr (\x acc -> (formatLink x) `append` acc ) "" links
           where
-            formatLink link  = linkUrl (entityVal link)
+            formatLink link  = linkUrl (entityVal link) `append` "\n\n\n"
