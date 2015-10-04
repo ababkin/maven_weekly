@@ -2,8 +2,10 @@
 module Handlers.Links(addLink, newLink) where
   import           Application(App)
   import           Control.Applicative((<*>), (<$>), liftA)
+  import           Control.Monad(void)
   import           Control.Monad.Trans(liftIO)
   import           Database.Persist(insert, Entity(..))
+  import           Data.Maybe(fromMaybe)
   import           Data.Text(pack)
   import           Data.Time.Clock(getCurrentTime)
   import           Data.Monoid(mempty)
@@ -63,9 +65,9 @@ module Handlers.Links(addLink, newLink) where
     -> Maybe c 
     -> (a -> b -> c -> Handler App App ()) 
     -> Handler App App ()
-  require3Params a b c fn = case fn <$> a <*> b <*> c of 
-                               Just a -> a >> return ()
-                               Nothing -> do 
-                                 render "missing_params"
-                                 modifyResponse $ setResponseStatus 422 ""
-                                 return ()
+  require3Params a b c fn = void $ fromMaybe bail (fn <$> a <*> b <*> c)
+    where 
+      bail = do
+        render "missing_params"
+        modifyResponse $ setResponseStatus 422 ""
+
