@@ -9,7 +9,7 @@ import Control.Monad.Trans.Reader(runReaderT, ReaderT)
 import Control.Monad.Trans(liftIO)
 import qualified Data.ByteString.Char8 as BCH
 import Data.Monoid(mconcat)
-import Data.Maybe(catMaybes)
+import Data.Maybe(mapMaybe)
 import qualified Data.Traversable as T
 import Database.Persist(Entity(..), PersistEntity)
 import Database.Persist.Sql(SqlBackend)
@@ -17,9 +17,8 @@ import Database.Persist.Postgresql(withPostgresqlConn, runSqlPersistM)
 import Data.Text(Text, append)
 import DB.Settings(postgresConnString)
 import SendGrid(SendGridEmail(..), sendEmail) 
-import Queries.Group(allGroups, linkUserGroup)
+import Queries.Group(allGroups, linksForGroup, usersInGroup)
 import Schema
-
 import Snap.Snaplet(with)
 import Snap.Snaplet.Auth(AuthUser(..))
 import Snap.Snaplet.Auth.Backends.Persistent(SnapAuthUser)
@@ -33,33 +32,21 @@ main = do
   connStr <- BCH.pack <$> postgresConnString
   runStderrLoggingT $ withPostgresqlConn connStr $ \conn -> do
       liftIO $ flip runSqlPersistM conn $ do 
-        xs <- extractEntities `liftM` linkUserGroup
+        groups <- allGroups
+        links <- mapM linksForGroup groups
+        members <- mapM usersInGroup groups
         apiKey <- liftIO $ BCH.pack <$> getEnv "SENDGRID_API_KEY"
         liftIO $ do 
-          T.mapM (sendEmail apiKey) $ emailsForGroup $ sortByGroup xs
+          T.mapM (sendEmail apiKey) $ emailsForGroup $ zip3 groups links members
           return ()
 
-type GroupName = Text
-
-sortByGroup :: [(Link, AuthUser, Group)] -> Map GroupName [(Link, AuthUser)]
-sortByGroup xs = foldr insertLinkUser empty xs
-  where 
-    insertLinkUser :: (Link, AuthUser, Group) -> Map GroupName [(Link, AuthUser)] -> Map GroupName [(Link, AuthUser)] 
-    insertLinkUser (link, user, group) hash = case lookup (groupName group) hash of 
-                                                  Just a -> insert (groupName group) ((link, user) : a) hash
-                                                  Nothing -> insert (groupName group) [(link, user)] hash
-
-emailsForGroup :: Map GroupName [(Link, AuthUser)] -> Map GroupName SendGridEmail
-emailsForGroup hash = mapWithKey generateEmail hash
+emailsForGroup :: [(Entity Group, [Entity Link], [AuthUser])] -> [SendGridEmail]
+emailsForGroup = map generateEmail
   where
-    generateEmail :: GroupName -> [(Link, AuthUser)] -> SendGridEmail
-    generateEmail key xs = SendGridEmail userEmails "no-reply@mavenweekly.com" ("Maven Weekly: " `append` key) links
+    generateEmail :: (Entity Group, [Entity Link], [AuthUser]) -> SendGridEmail
+    generateEmail (group, links, users) = SendGridEmail userEmails "no-reply@mavenweekly.com" ("Maven Weekly: " `append` (groupName $  entityVal group)) formattedLinks
       where
-        userEmails = catMaybes $ map (userEmail . snd) xs
-        links = foldr (\x acc -> (formatLink x) `append` acc ) "" xs
+        userEmails = mapMaybe userEmail users
+        formattedLinks = foldr (\x acc -> (formatLink x) `append` acc ) "" links
           where
-            formatLink (link, user) = linkUrl link `append` " from " `append` (userLogin user) `append` " \n\n\n"
-
-
-extractEntities :: (PersistEntity a, PersistEntity c) => [(Entity a, b, Entity c)] -> [(a, b, c)]
-extractEntities xs = flip map xs $ (\(x, y, z) -> (entityVal x, y, entityVal z) )
+            formatLink link  = linkUrl (entityVal link)
