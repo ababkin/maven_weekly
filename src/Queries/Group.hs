@@ -26,7 +26,7 @@ type PersistentBackend = MonadIO a => ReaderT SqlBackend a [Entity Group]
                       -- return (link ^. LinkGroupId, link ^. LinkUrl)
 
 allGroups :: (MonadBaseControl IO a, MonadLogger a, MonadIO a) => ReaderT SqlBackend a [Entity Group]
-allGroups = E.select $ E.from (\g -> return g)
+allGroups = E.select $ E.from return
 
 groupIdFromParam :: ByteString -> GroupId
 groupIdFromParam = GroupKey . SqlBackendKey . fromIntegral . read . byteStringToString
@@ -35,22 +35,22 @@ idFromGroupEntity :: Entity Group -> Int
 idFromGroupEntity = fromIntegral . unSqlBackendKey . unGroupKey . entityKey
 
 usersInGroup :: (MonadBaseControl IO m, MonadLogger m, MonadIO m) => Entity Group ->  SqlPersistT m [AuthUser]
-usersInGroup  entityGroup = fmap (map db2au) $ do 
+usersInGroup  entityGroup = fmap (map db2au) $
                               E.select $ E.from $ \(user `E.InnerJoin` userGroup `E.InnerJoin` group) -> do
                                   E.on $ group ^. GroupId E.==. userGroup ^. UserGroupGroup_id
                                   E.on $ userGroup ^. UserGroupUser_id E.==. user ^. SnapAuthUserId
-                                  E.where_ ( group ^. GroupId E.==. (E.val $ entityKey entityGroup) )
+                                  E.where_ ( group ^. GroupId E.==. E.val (entityKey entityGroup) )
                                   return user
 
 linksForGroup :: (MonadBaseControl IO m, MonadLogger m, MonadIO m) =>  Entity Group -> SqlPersistT m [Entity Link]
-linksForGroup group = do
+linksForGroup group =
   E.select $ E.from $ \(link) -> do
               E.where_ ( link ^. LinkGroupId E.==. E.val (entityKey group) )
               return link
 
 
 groupsForUser :: AuthUser -> PersistentBackend
-groupsForUser user = do 
+groupsForUser user =
   E.select $ E.from $ \(group `E.InnerJoin` userGroup) -> do
               E.on $ group ^. GroupId E.==. userGroup ^. UserGroupGroup_id
               E.where_ ( userGroup ^. UserGroupUser_id E.==. (E.val . fromJust $ userDBKey user ))
