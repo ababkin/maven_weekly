@@ -6,10 +6,10 @@ module SendGrid(SendGridEmail(..), SendGridApiKey, sendEmail) where
   import Network.Wreq(responseBody, postWith, FormParam(..), header, defaults, Options )
 
   data SendGridEmail = SendGridEmail {
-       emailTo :: [Text]
-     , emailFrom :: Text
+       emailTo      :: [Text]
+     , emailFrom    :: Text
      , emailSubject :: Text
-     , emailText :: Text
+     , emailText    :: Text
     } deriving Show
 
   type SendGridApiKey = ByteString
@@ -17,10 +17,10 @@ module SendGrid(SendGridEmail(..), SendGridApiKey, sendEmail) where
   toFormParams :: SendGridEmail -> [FormParam]
   toFormParams email = toParams ++ [fromParam, subjectParam, textParam] 
                       where
-                        toParams = map ("to[]" :=) (emailTo email)
-                        fromParam = "from" := (emailFrom email)
-                        subjectParam = "subject" := (emailSubject email)
-                        textParam = "text" := (emailText email)
+                        toParams      = map ("to[]" :=) emailTo email
+                        fromParam     = "from"    := emailFrom email
+                        subjectParam  = "subject" := emailSubject email
+                        textParam     = "text"    := emailText email
 
   sendEmail :: SendGridApiKey -> SendGridEmail -> IO ()
   sendEmail apiKey email = do 
