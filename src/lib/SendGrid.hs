@@ -1,4 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE NamedFieldPuns #-}
+
 module SendGrid(SendGridEmail(..), SendGridApiKey, sendEmail) where
   import Data.ByteString(ByteString, append)
   import Data.Text(Text)
@@ -15,12 +17,13 @@ module SendGrid(SendGridEmail(..), SendGridApiKey, sendEmail) where
   type SendGridApiKey = ByteString
 
   toFormParams :: SendGridEmail -> [FormParam]
-  toFormParams email = toParams ++ [fromParam, subjectParam, textParam] 
-                      where
-                        toParams      = map ("to[]" :=) emailTo email
-                        fromParam     = "from"    := emailFrom email
-                        subjectParam  = "subject" := emailSubject email
-                        textParam     = "text"    := emailText email
+  toFormParams SendGridEmail{emailTo, emailFrom, emailSubject, emailText} = 
+    toParams ++ [fromParam, subjectParam, textParam] 
+      where
+        toParams      = map ("to[]" :=) emailTo
+        fromParam     = "from"    := emailFrom
+        subjectParam  = "subject" := emailSubject
+        textParam     = "text"    := emailText
 
   sendEmail :: SendGridApiKey -> SendGridEmail -> IO ()
   sendEmail apiKey email = do 
