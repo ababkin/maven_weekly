@@ -43,8 +43,10 @@ emailsForGroup :: [(Entity Group, [Entity Link], [AuthUser])] -> [SendGridEmail]
 emailsForGroup = map generateEmail
   where
     generateEmail :: (Entity Group, [Entity Link], [AuthUser]) -> SendGridEmail
-    generateEmail (group, links, users) = SendGridEmail userEmails "no-reply@mavenweekly.com" ("Maven Weekly: " `append` (groupName $  entityVal group)) formattedLinks
+    generateEmail (group, links, users) = 
+      SendGridEmail userEmails "no-reply@mavenweekly.com" groupTitle formattedLinks
       where
+        groupTitle = "Maven Weekly: " `append` groupName (entityVal group)
         userEmails = mapMaybe userEmail users
         formattedLinks = foldr (\x acc -> (formatLink x) `append` acc ) "" links
           where
