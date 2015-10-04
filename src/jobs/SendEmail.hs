@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
 import Control.Applicative((<$>))
-import Control.Monad(forM_, liftM)
+import Control.Monad(forM_, liftM, void)
 import Control.Monad.Trans.Control(MonadBaseControl)
 import Control.Monad.IO.Class(MonadIO)
 import Control.Monad.Logger(MonadLogger, runStderrLoggingT)
@@ -30,15 +30,14 @@ import System.Environment(getEnv)
 main :: IO ()
 main = do
   connStr <- BCH.pack <$> postgresConnString
-  runStderrLoggingT $ withPostgresqlConn connStr $ \conn -> do
+  runStderrLoggingT $ withPostgresqlConn connStr $ \conn -> void $
       liftIO $ flip runSqlPersistM conn $ do 
         groups <- allGroups
         links <- mapM linksForGroup groups
         members <- mapM usersInGroup groups
-        apiKey <- liftIO $ BCH.pack <$> getEnv "SENDGRID_API_KEY"
         liftIO $ do 
+          apiKey <- BCH.pack <$> getEnv "SENDGRID_API_KEY"
           T.mapM (sendEmail apiKey) $ emailsForGroup $ zip3 groups links members
-          return ()
 
 emailsForGroup :: [(Entity Group, [Entity Link], [AuthUser])] -> [SendGridEmail]
 emailsForGroup = map generateEmail
